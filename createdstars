@@ -1,0 +1,201 @@
+import javafx.animation.AnimationTimer;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+/*Mr. Turner ignore ts because we can't figure out how to work java fx
+on another new java file so we're just using the ball demo */
+public class BouncingBallsDemo extends Application {
+
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 600;
+    private static final int STAR_COUNT = 10;
+    private static final double STAR_SIZE = 20;
+
+    private final Random random = new Random();
+    private final List<Star> stars = new ArrayList<>();
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) {
+        Pane root = new Pane();
+        Scene scene = new Scene(root, WIDTH, HEIGHT, Color.BLACK);
+
+        // Create stars
+        for (int i = 0; i < STAR_COUNT; i++) {
+
+            double x = random.nextDouble() * (WIDTH - 2 * STAR_SIZE) + STAR_SIZE;
+            double y = random.nextDouble() * (HEIGHT - 2 * STAR_SIZE) + STAR_SIZE;
+
+            double dx = random.nextDouble() * 4 - 2;
+            double dy = random.nextDouble() * 4 - 2;
+
+            Color color = randomColor();
+
+            Star star = new Star(x, y, dx, dy, STAR_SIZE, color);
+
+            stars.add(star);
+            root.getChildren().add(star.starShape);
+        }
+
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+
+                for (Star star : stars) {
+                    star.update();
+                }
+
+                checkCollisions();
+            }
+        };
+
+        timer.start();
+
+        stage.setTitle("Bouncing Stars");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void checkCollisions() {
+
+        for (int i = 0; i < stars.size(); i++) {
+
+            Star s1 = stars.get(i);
+
+            for (int j = i + 1; j < stars.size(); j++) {
+
+                Star s2 = stars.get(j);
+
+                double dx = s1.x - s2.x;
+                double dy = s1.y - s2.y;
+
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= STAR_SIZE * 2) {
+
+                    // Swap velocities
+                    double tempDx = s1.dx;
+                    double tempDy = s1.dy;
+
+                    s1.dx = s2.dx;
+                    s1.dy = s2.dy;
+
+                    s2.dx = tempDx;
+                    s2.dy = tempDy;
+
+                    // Change colors
+                    s1.starShape.setFill(randomColor());
+                    s2.starShape.setFill(randomColor());
+                }
+            }
+        }
+    }
+
+    private Color randomColor() {
+        return Color.color(
+                random.nextDouble(),
+                random.nextDouble(),
+                random.nextDouble()
+        );
+    }
+
+    private Polygon createStar(double centerX,
+                               double centerY,
+                               double size) {
+
+        Polygon star = new Polygon();
+
+        for (int i = 0; i < 10; i++) {
+
+            double angle = Math.PI / 2 + i * Math.PI / 5;
+
+            double radius;
+
+            if (i % 2 == 0) {
+                radius = size;
+            } else {
+                radius = size / 2;
+            }
+
+            double x = centerX + radius * Math.cos(angle);
+            double y = centerY - radius * Math.sin(angle);
+
+            star.getPoints().addAll(x, y);
+        }
+
+        return star;
+    }
+
+    private class Star {
+
+        Polygon starShape;
+
+        double x;
+        double y;
+
+        double dx;
+        double dy;
+
+        Star(double x,
+             double y,
+             double dx,
+             double dy,
+             double size,
+             Color color) {
+
+            this.x = x;
+            this.y = y;
+
+            this.dx = dx;
+            this.dy = dy;
+
+            starShape = createStar(x, y, size);
+
+            starShape.setFill(color);
+            starShape.setStroke(Color.BLACK);
+        }
+
+        void update() {
+
+            x += dx;
+            y += dy;
+
+            if (x - STAR_SIZE < 0 ||
+                x + STAR_SIZE > WIDTH) {
+
+                dx *= -1;
+            }
+
+            if (y - STAR_SIZE < 0 ||
+                y + STAR_SIZE > HEIGHT) {
+
+                dy *= -1;
+            }
+
+            updatePosition();
+        }
+
+        void updatePosition() {
+
+            Polygon newStar =
+                    createStar(x, y, STAR_SIZE);
+
+            starShape.getPoints().clear();
+
+            starShape.getPoints().addAll(
+                    newStar.getPoints()
+            );
+        }
+    }
+}
