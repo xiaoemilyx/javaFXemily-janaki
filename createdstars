@@ -56,7 +56,6 @@ public class BouncingBallsDemo extends Application {
                     star.update();
                 }
 
-                checkCollisions();
             }
         };
 
@@ -65,41 +64,6 @@ public class BouncingBallsDemo extends Application {
         stage.setTitle("Bouncing Stars");
         stage.setScene(scene);
         stage.show();
-    }
-
-    private void checkCollisions() {
-
-        for (int i = 0; i < stars.size(); i++) {
-
-            Star s1 = stars.get(i);
-
-            for (int j = i + 1; j < stars.size(); j++) {
-
-                Star s2 = stars.get(j);
-
-                double dx = s1.x - s2.x;
-                double dy = s1.y - s2.y;
-
-                double distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance <= STAR_SIZE * 2) {
-
-                    // Swap velocities
-                    double tempDx = s1.dx;
-                    double tempDy = s1.dy;
-
-                    s1.dx = s2.dx;
-                    s1.dy = s2.dy;
-
-                    s2.dx = tempDx;
-                    s2.dy = tempDy;
-
-                    // Change colors
-                    s1.starShape.setFill(randomColor());
-                    s2.starShape.setFill(randomColor());
-                }
-            }
-        }
     }
 
     private Color randomColor() {
